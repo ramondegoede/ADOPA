@@ -11,16 +11,11 @@ if [ -z "$AZP_TOKEN" ]; then
   exit 1
 fi
 
-if [ -n "$AZP_WORK" ]; then
-  mkdir -p "$AZP_WORK"
-fi
-
 export AGENT_ALLOW_RUNASROOT="1"
 
 cleanup() {
   if [ -e config.sh ]; then
-    print_header "Cleanup. Removing Azure Pipelines agent..."
-
+    echo "Cleanup. Removing Azure Pipelines agent..."
     # If the agent has some running jobs, the configuration removal process will fail.
     # So, give it some time to finish the job.
     while true; do
@@ -32,25 +27,15 @@ cleanup() {
   fi
 }
 
+echo "setting env"
+
 # Let the agent ignore the token env variables
 export VSO_AGENT_IGNORE=AZP_TOKEN
-
-AZP_AGENT_PACKAGES=$(curl -LsS \
-    -u user:"$AZP_TOKEN" \
-    -H 'Accept:application/json;' \
-    "$AZP_URL/_apis/distributedtask/packages/agent?platform=$TARGETARCH&top=1")
-
-AZP_AGENT_PACKAGE_LATEST_URL=$(echo "$AZP_AGENT_PACKAGES" | jq -r '.value[0].downloadUrl')
-
-if [ -z "$AZP_AGENT_PACKAGE_LATEST_URL" -o "$AZP_AGENT_PACKAGE_LATEST_URL" == "null" ]; then
-  echo 1>&2 "error: could not determine a matching Azure Pipelines agent"
-  echo 1>&2 "check that account '$AZP_URL' is correct and the token is valid for that account"
-  exit 1
-fi
-
-curl -LsS $AZP_AGENT_PACKAGE_LATEST_URL | tar -xz & wait $!
-
 source ./env.sh
+
+echo "starting agent"
+
+pwd
 
 ./config.sh --unattended \
   --agent "${AZP_AGENT_NAME:-$(hostname)}" \

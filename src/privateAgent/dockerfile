@@ -24,9 +24,10 @@ RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash \
 # Can be 'linux-x64', 'linux-arm64', 'linux-arm', 'rhel.6-x64'.
 ENV TARGETARCH=linux-x64
 
-WORKDIR /azp
+RUN curl -LsS https://vstsagentpackage.azureedge.net/agent/2.196.2/vsts-agent-osx-x64-2.196.2.tar.gz | tar -xz & wait $!
 
-COPY ./start.sh .
+RUN ls -la
+
 RUN chmod +x start.sh
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["start.sh"]
